@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "WYjW8WDvE5CRI03Nx7ieyErSH4RqonXvHfbyWtXd1AgFNd5Um3iQA9kpTAGM6pQswEMZHFYBxXl3GVV4Mwvd5w==",
+  "dgSpecHash": "e67IQofINjg8xMi66pPohoencv7VBIHjHy5wkgec7MpmR7hYzVkTlBZiFH1v/S3nBtvXOvbf14wq7iavY3lxgA==",
   "success": true,
-  "projectFilePath": "/home/idotexe/bbFinal/bbFinal/bbFinal.csproj",
+  "projectFilePath": "/home/idotexe/bbFinal/BattleBoatsProject/bbFinal/bbFinal.csproj",
   "expectedPackageFiles": [
     "/home/idotexe/.nuget/packages/figgle/0.4.0/figgle.0.4.0.nupkg.sha512",
     "/home/idotexe/.nuget/packages/microsoft.netcore.platforms/1.1.0/microsoft.netcore.platforms.1.1.0.nupkg.sha512",

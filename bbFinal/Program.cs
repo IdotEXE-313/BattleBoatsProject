@@ -15,6 +15,10 @@ namespace BattleBoats
 
         static void Menu()
         {
+            /*
+             * The boards that will be used throughout the game are initialized here because they are needed for the PlayGame function parameters
+             * This is because, when we resume the game, we need someway of using the PlayGame function with the arrays deserialized in the ResumeGame function
+             */
             string[,] playerBoard = new string[8, 8];
             string[,] playerTrackingBoard = new string[8, 8];
             string[,] computerBoard = new string[8, 8];
@@ -47,7 +51,7 @@ namespace BattleBoats
                 Menu();
             }
         }
-
+        
         static void Instructions()
         {
             Console.WriteLine(FiggleFonts.Standard.Render("Battle - Boats"));
@@ -62,13 +66,18 @@ namespace BattleBoats
             Thread.Sleep(10000);
             Menu();
         }
-
+        
+         
         static void PlayGame(string[,] playerBoard, string[,] playerTrackingBoard, string[,] computerBoard, string[,] computerTrackingBoard)
         {
             string coordinate = String.Empty;
-            PresentFleet(playerBoard);
             int checkForCompleteBoard = 0;
+            PresentFleet(playerBoard);
 
+            /*
+             * This loop checks to see how many boats already exist within the PlayerBoard
+             * This is because, if the player is resuming the game and hasn't finished placing their boats yet, we need to know how many more boats they need to place
+             */
             for (int i = 0; i < playerBoard.GetLength(0); i++)
             {
                 for (int j = 0; j < playerBoard.GetLength(1); j++)
@@ -80,6 +89,10 @@ namespace BattleBoats
                 }
             }
 
+            /*
+             * If there are not 5 boats on the board already, the loop sets i to the remainder of boats that need to be added
+             * The user is then prompted for a coordinate. This is error checked, and if invalid, the user is prompted to enter again.
+             */
             if (checkForCompleteBoard != 5)
             {
                 for (int i = 0; i < (5 - checkForCompleteBoard); i++)
@@ -98,6 +111,11 @@ namespace BattleBoats
                     SaveProgress(playerBoard, playerTrackingBoard, computerBoard, computerTrackingBoard);
                 }
 
+                /*
+                 * Loop adds 5 boats to the computer's board
+                 * This loop will only ever need to be called once in an entire game. Once the user inputs their last boat, this process begins and the computerBoard is saved
+                 * This means the user doesn't have time to quit the game. The computerBoard has either been made or hasn't been made, and will never be in the process of being made
+                 */
                 for (int i = 0; i < 5; i++)
                 {
                     var coordinates = GetComputerCoordinates();
@@ -106,8 +124,8 @@ namespace BattleBoats
                 SaveProgress(playerBoard, playerTrackingBoard, computerBoard, computerTrackingBoard);
             }
 
+            
             bool gameProgress = true;
-
             while (gameProgress)
             {
                 PresentFleet(playerTrackingBoard);
@@ -115,7 +133,7 @@ namespace BattleBoats
                 if (CheckIfComputerLost(computerBoard))
                 {
                     Console.WriteLine("Player has won!");
-                    WipeProgressFile();
+                    WipeProgressFile(); //Progress file is wiped here to ensure the game never resumes from the point where the game is already won
                     gameProgress = false;
                 }
                 else
@@ -126,7 +144,7 @@ namespace BattleBoats
                     if (CheckIfPlayerLost(playerBoard))
                     {
                         Console.WriteLine("Computer has won!");
-                        WipeProgressFile();
+                        WipeProgressFile(); //Again, progress file is wiped here to ensure the game never resumes from the point where the game is already won
                         gameProgress = false;
                     }
                     SaveProgress(playerBoard, playerTrackingBoard, computerBoard, computerTrackingBoard);
@@ -135,7 +153,9 @@ namespace BattleBoats
 
             Menu();
         }
-        //Converts the letter part of the coordinate input with the integer index
+        
+        /*Responsible for returning the dictionary which will be used to convert the letter part of the coordinate into an index
+         E.g., assume we have 'A1'. This dictionary will be responsible for converting 'A' to index 0 of a board*/
         private static Dictionary<string, int> GetLetterDictionary()
         {
             var letterConversions = new Dictionary<string, int>()
@@ -153,7 +173,11 @@ namespace BattleBoats
             return letterConversions;
         }
 
-        //Converts the Number part of the coordinate input with the index
+        /*
+         * Responsible for converting the number part of the coordinate into an index
+         * E.g., assume we have the coordinate 'A1', this dictionary will be responsible for converting '1' to index 0 of a board
+         * When combined with the GetLetterDictionary function, this translates 'A1' to (0,0)
+         */
         private static Dictionary<string, int> GetNumberDictionary()
         {
             var numberConversions = new Dictionary<string, int>()
@@ -171,20 +195,20 @@ namespace BattleBoats
             return numberConversions;
         }
         
-        //Outputs a 2d array in a table format
+        //Outputs the 2d array in a table-like format, using StringBuilder in order to output the row (1,2,3...8) alongside the array itself
         private static void PresentFleet(string[,] board)
         {
             string[] tableColumnOutput = {"A", "B", "C", "D", "E", "F", "G", "H"};
             string[] tableRowOutput = {"1", "2", "3", "4", "5", "6", "7", "8"};
             
-            Console.WriteLine("\t" + string.Join("\t", tableColumnOutput)); //displays the letters of the table
+            Console.WriteLine("\t" + string.Join("\t", tableColumnOutput)); 
             StringBuilder sb = new StringBuilder();
 
             for (int i = 0; i < tableRowOutput.Length; i++)
             {
-                sb.Append(tableRowOutput[i] + "\t");  //Adds the number column to the string builder
+                sb.Append(tableRowOutput[i] + "\t");  
                 for (int j = 0; j < board.Length / tableRowOutput.Length; j++) 
-                    sb.Append(board[i, j] + "\t"); //Adds playerBoard index to the string builder
+                    sb.Append(board[i, j] + "\t");
 
                 Console.WriteLine(sb.ToString()); 
                 sb.Clear();
@@ -205,6 +229,13 @@ namespace BattleBoats
             var letterConversions = GetLetterDictionary();
             var numberConversions = GetNumberDictionary();
             
+            /*
+             * Returns false is coordinate length is not equal to 2...
+             * Or if the first character of the coordinate is not equal to an upper case letter....
+             * Or if the second character of the coordinate is not equal to a number from 0 - 9....
+             * Or if the first character of the coordinate does not match a key in the LetterConversions dictionary....
+             * Or if the second character of the coordinate does not match a key in the NumberConversions dictionary
+             */
             if (coordinate.Length != 2 || !regexCharacter.IsMatch(coordinate[0].ToString()) || !regexNumber.IsMatch(coordinate[1].ToString()) || !letterConversions.ContainsKey(coordinate[0].ToString()) || !numberConversions.ContainsKey(coordinate[1].ToString()))
             {
                 Console.WriteLine("Invalid coordinate. Please re-enter");
@@ -213,6 +244,12 @@ namespace BattleBoats
             return true;
         }
 
+        /*
+         * A trend that follows from here:
+         * You may notice throughout the program that, when placing a coordinate on the board, the coordinate is flipped
+         * E.g., if we have G5, this index is flipped to match the index of 5G.
+         * This is because of the way the board is presented. Had the index not been swapped, G5 would go to (6,4) on the board which is actually coordinate E7
+         */
         private static string[,] AddBoatToPlayerBoard(string[,] playerBoard, string coordinate)
         {
             var letterConversions = GetLetterDictionary();
@@ -221,6 +258,10 @@ namespace BattleBoats
             var regexNumber = new Regex(@"[0-9]");
             int indexCharacter = 0, indexNumber = 0;
 
+            /*
+             * Searches the coordinate input, checking to see whether the current character is a letter or number
+             * Then, the corresponding index for the letter / number is fetched from the appropriate dictionary
+             */ 
             foreach (var character in coordinate)
             {
                 if (regexCharacter.IsMatch(character.ToString()))
@@ -239,7 +280,7 @@ namespace BattleBoats
                 string coordinateReattempt = GetUserInput();
                 AddBoatToPlayerBoard(playerBoard, coordinateReattempt);
             }
-
+            
             playerBoard[indexNumber, indexCharacter] = "B";
             return playerBoard;
         }
@@ -269,6 +310,7 @@ namespace BattleBoats
         {
             Console.Write("Guess the computer's boat location: ");
             var coordinate = Console.ReadLine().ToUpper();
+            
             bool checkIfValid = CheckIfCoordinateIsValid(coordinate);
             var letterConversions = GetLetterDictionary();
             var numberConversions = GetNumberDictionary();
@@ -278,7 +320,7 @@ namespace BattleBoats
 
             while (!checkIfValid)
             {
-                Console.WriteLine("Coordinate input invalid. Input again");
+                Console.WriteLine("Coordinate input invalid. Please ensure you input a coordinate corresponding to a coordinate on the board (e.g. G5): ");
                 coordinate = GetUserInput();
                 checkIfValid = CheckIfCoordinateIsValid(coordinate);
             }
@@ -322,6 +364,7 @@ namespace BattleBoats
             var letterConversions = GetLetterDictionary();
             var numberConversions = GetNumberDictionary();
             
+            //Fetches the Key by the value of the dictionary. This is so we can output the coordinates in which computer is guessing rather than the index in which they are guessing
             var letter = letterConversions.FirstOrDefault(x => x.Value == coordinates.Item1).Key;
             var number = numberConversions.FirstOrDefault(x => x.Value == coordinates.Item2).Key;
 
@@ -329,7 +372,8 @@ namespace BattleBoats
 
             if (computerTrackingBoard[coordinates.Item2, coordinates.Item1] != null)
             {
-                Console.WriteLine("Computer has already guessed here");
+                Console.WriteLine("Computer has already guessed here!");
+                Thread.Sleep(2000);
                 ComputerGuess(playerBoard, computerTrackingBoard);
             }
 
@@ -348,6 +392,11 @@ namespace BattleBoats
             return computerTrackingBoard;
         }
 
+        /*
+         * Applies to both CheckIfPlayerLost and CheckIfComputerLost
+         * Every index of the board is checked for an instance of a remaining boat
+         * Clearly, if there is a boat left, then this player hasn't had all their boats sunk and thus haven't lost the game
+         */
         private static bool CheckIfPlayerLost(string[,] playerBoard)
         {
             for (int i = 0; i < playerBoard.GetLength(0); i++)
@@ -360,7 +409,6 @@ namespace BattleBoats
                     }
                 }
             }
-            
             return true;
         }
 
@@ -379,10 +427,10 @@ namespace BattleBoats
             return true;
         }
 
-        /*First array = playerBoard
-         Second array = playerTrackingBoard
-         Third array = computerBoard
-         Fourth array = computerTrackingBoard*/
+        /*
+         * This method takes advantage of the Newtonsoft json serializer
+         * The reason I chose this over writing as plain text is because it is far easier to convert a json object back into a 2d array when the game is resumed
+         */
         private static void SaveProgress(string[,] playerBoard, string[,] playerTrackingBoard, string[,] computerBoard, string[,] computerTrackingBoard)
         {
             using (StreamWriter sw = new StreamWriter(@"progressFile", false))
@@ -392,7 +440,7 @@ namespace BattleBoats
                     switch (i)
                     {
                         case 0:
-                            sw.Write(JsonConvert.SerializeObject(playerBoard));
+                            sw.Write(JsonConvert.SerializeObject(playerBoard)); //Converts the appropriate board into a json object and writes it to a file
                             sw.Write("\n");
                             break;
                         case 1:
@@ -423,7 +471,7 @@ namespace BattleBoats
                     Menu();
                 }
             }
-            catch (FileNotFoundException)
+            catch (FileNotFoundException) //This is an exception which only occurs when the file has never been created and option 3 is selected. This is because the file doesn't exist yet
             {
                 Console.WriteLine("Cannot resume a game that's never been played! Please play and place at least one boat to resume a game");
                 Menu();
@@ -444,7 +492,7 @@ namespace BattleBoats
                     switch (currentArray)
                     {
                         case 0:
-                            playerBoard = JsonConvert.DeserializeObject<string[,]>(line);
+                            playerBoard = JsonConvert.DeserializeObject<string[,]>(line); //Deserializes the json object straight back into a 2d array
                             break;
                         case 1:
                             playerTrackingBoard = JsonConvert.DeserializeObject<string[,]>(line);
@@ -464,6 +512,7 @@ namespace BattleBoats
             PlayGame(playerBoard, playerTrackingBoard, computerBoard, computerTrackingBoard);
         }
 
+        
         private static void WipeProgressFile()
         {
             File.WriteAllText(@"progressFile", String.Empty);

@@ -4540,11 +4540,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/idotexe/bbFinal/bbFinal/bbFinal.csproj",
+      "projectUniqueName": "/home/idotexe/bbFinal/BattleBoatsProject/bbFinal/bbFinal.csproj",
       "projectName": "bbFinal",
-      "projectPath": "/home/idotexe/bbFinal/bbFinal/bbFinal.csproj",
+      "projectPath": "/home/idotexe/bbFinal/BattleBoatsProject/bbFinal/bbFinal.csproj",
       "packagesPath": "/home/idotexe/.nuget/packages/",
-      "outputPath": "/home/idotexe/bbFinal/bbFinal/obj/",
+      "outputPath": "/home/idotexe/bbFinal/BattleBoatsProject/bbFinal/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/home/idotexe/.nuget/NuGet/NuGet.Config"
